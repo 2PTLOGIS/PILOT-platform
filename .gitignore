@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+
+# Khong dua khoa API va cau hinh rieng len GitHub
+.env
+.env.*
+!.env.example
+
+# Tep tam cua he dieu hanh va trinh soan thao
+.DS_Store
+Thumbs.db
+*.log
+.vite/
