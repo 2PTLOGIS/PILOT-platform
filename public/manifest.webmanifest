@@ -1,14 +1,15 @@
 {
   "name": "PILOT Hải Phòng",
   "short_name": "PILOT",
-  "start_url": "/driver",
+  "start_url": "./driver",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f3f7fc",
   "theme_color": "#073b7a",
   "description": "Ứng dụng điều phối vận tải End-to-End",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
