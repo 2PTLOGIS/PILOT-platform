@@ -21,8 +21,8 @@
 
 ## Lộ trình mở rộng không làm lại
 
-1. **Hiện tại — Interactive Demo:** 5 kịch bản, ba giao diện, dữ liệu đồng bộ trong một trình duyệt.
-2. **Realtime Demo:** thay Local Storage bằng Supabase để điện thoại và máy tính khác nhau dùng chung dữ liệu.
+1. **Interactive Demo:** 5 kịch bản và ba giao diện dùng chung một luồng nghiệp vụ.
+2. **Hiện tại — Realtime Demo:** Supabase đồng bộ điện thoại và máy tính; Local Storage là lớp dự phòng khi chưa cấu hình hoặc mất mạng.
 3. **Simulation Engine:** tách bộ phát sự kiện tàu, bãi, Gate và xe thành service.
 4. **Forecast/Optimization:** gọi API Python cho XGBoost/LightGBM và OR-Tools.
 5. **Shadow Mode:** đọc dữ liệu thật đã ẩn danh nhưng chưa gửi thay đổi tới hệ thống cảng.

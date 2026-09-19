@@ -32,6 +32,13 @@ small { color: #70829a; }
 .brand-title strong { font-size: 16px; }
 .brand-title small { margin-top: 4px; color: #b9d2ef; font-size: 11px; }
 .home-link { justify-self: end; padding: 8px 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 9px; font-size: 12px; }
+.header-actions { display: flex; align-items: center; justify-self: end; gap: 10px; }
+.sync-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; color: rgba(255,255,255,.92); background: rgba(0,0,0,.12); font-size: 10px; font-weight: 800; white-space: nowrap; }
+.sync-badge i { width: 7px; height: 7px; border-radius: 50%; background: #ffd166; }
+.sync-badge.online i { background: #59e391; box-shadow: 0 0 0 3px rgba(89,227,145,.14); }
+.sync-badge.syncing i, .sync-badge.connecting i { background: #70c7ff; animation: sync-pulse 1s infinite alternate; }
+.sync-badge.error i { background: #ff7878; }
+@keyframes sync-pulse { to { opacity: .35; } }
 .dashboard-page { min-height: 100vh; background: #f1f5fa; }
 .dashboard-content { padding: 26px 3.5vw 42px; }
 .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px; }
@@ -133,7 +140,7 @@ small { color: #70829a; }
 .driver-page { min-height: 100vh; padding: 28px; background: radial-gradient(circle at top, #dbeafe, #eef4fa 55%); }
 .phone-frame { overflow: hidden; width: min(100%, 420px); min-height: calc(100vh - 56px); margin: auto; border: 8px solid #17202c; border-radius: 38px; background: #f4f7fb; box-shadow: 0 26px 70px rgba(17,38,65,.28); }
 .phone-status { display: flex; height: 28px; padding: 8px 22px 0; align-items: center; justify-content: space-between; color: white; background: #082c5e; font-size: 10px; font-weight: 800; }
-.phone-frame .brand-header { box-shadow: none; }.phone-frame .brand-title { align-items: flex-start; margin-left: 8px; }.phone-frame .brand-title strong { font-size: 11px; }.phone-frame .brand-title small { font-size: 8px; }.phone-frame .brand-logo { width: 78px; height: 34px; padding: 4px 6px; border-radius: 8px; }.phone-frame .home-link { font-size: 0; width: 30px; height: 30px; padding: 0; border-radius: 50%; }.phone-frame .home-link::after { content: '⌂'; display: grid; height: 100%; place-items: center; font-size: 16px; }
+.phone-frame .brand-header { box-shadow: none; }.phone-frame .brand-title { align-items: flex-start; margin-left: 8px; }.phone-frame .brand-title strong { font-size: 11px; }.phone-frame .brand-title small { font-size: 8px; }.phone-frame .brand-logo { width: 78px; height: 34px; padding: 4px 6px; border-radius: 8px; }.phone-frame .sync-badge { display: none; }.phone-frame .home-link { font-size: 0; width: 30px; height: 30px; padding: 0; border-radius: 50%; }.phone-frame .home-link::after { content: '⌂'; display: grid; height: 100%; place-items: center; font-size: 16px; }
 .driver-content { padding: 14px 13px 82px; }
 .driver-tabs { display: grid; margin-bottom: 12px; grid-template-columns: 1.4fr .8fr 1fr; border-bottom: 1px solid #dbe4ee; }.driver-tabs button { padding: 10px 3px; border: 0; color: #75879b; background: transparent; font-size: 10px; }.driver-tabs button.active { color: #0c5cab; border-bottom: 2px solid #0c65bc; font-weight: 800; }.driver-tabs b { display: inline-grid; width: 16px; height: 16px; place-items: center; border-radius: 50%; color: white; background: #e34242; font-size: 9px; }
 .trip-card { padding: 18px; border: 1px solid #e0e8f1; border-radius: 17px; background: white; box-shadow: 0 8px 24px rgba(27,57,91,.06); }

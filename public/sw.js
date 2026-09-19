@@ -1,4 +1,4 @@
-const CACHE = 'pilot-demo-v1'
+const CACHE = 'pilot-demo-v2'
 const APP_SHELL = ['/', '/driver', '/dispatcher', '/control-tower', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {

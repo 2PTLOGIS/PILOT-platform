@@ -1,10 +1,25 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { initialState } from '../data/demoData'
 import { getScenario, roleMeta } from '../data/scenarios'
+import { isSupabaseConfigured } from '../services/supabase'
+import { loadSharedState, saveSharedState, subscribeToSharedState } from '../services/realtimeState'
 
 const STORAGE_KEY = 'pilot-demo-state-v1'
 const CHANNEL_KEY = 'pilot-demo-channel'
+const CLIENT_KEY = 'pilot-demo-client-id'
 const PilotContext = createContext(null)
+
+function getClientId() {
+  const saved = sessionStorage.getItem(CLIENT_KEY)
+  if (saved) return saved
+  const next = globalThis.crypto?.randomUUID?.() || `client-${Date.now()}-${Math.random()}`
+  sessionStorage.setItem(CLIENT_KEY, next)
+  return next
+}
+
+function isValidState(value) {
+  return Boolean(value && value.schemaVersion === 3 && value.trip && value.scenario)
+}
 
 function loadState() {
   try {
@@ -140,18 +155,79 @@ function executeScenario(current, actor) {
 
 export function PilotProvider({ children }) {
   const [state, setState] = useState(loadState)
+  const [sync, setSync] = useState(() => isSupabaseConfigured
+    ? { mode: 'connecting', label: 'Đang kết nối dữ liệu' }
+    : { mode: 'local', label: 'Chế độ cục bộ' })
   const channel = useRef(null)
+  const clientId = useRef(getClientId())
+  const stateRef = useRef(state)
+  const remoteReady = useRef(false)
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   useEffect(() => {
     if ('BroadcastChannel' in window) {
       channel.current = new BroadcastChannel(CHANNEL_KEY)
-      channel.current.onmessage = (event) => setState(event.data)
+      channel.current.onmessage = (event) => {
+        if (!isValidState(event.data)) return
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(event.data))
+        setState(event.data)
+      }
     }
     const onStorage = (event) => {
-      if (event.key === STORAGE_KEY && event.newValue) setState(JSON.parse(event.newValue))
+      if (event.key !== STORAGE_KEY || !event.newValue) return
+      const next = JSON.parse(event.newValue)
+      if (isValidState(next)) setState(next)
     }
     window.addEventListener('storage', onStorage)
+
+    let stopRealtime = () => {}
+    let cancelled = false
+
+    async function startRealtime() {
+      if (!isSupabaseConfigured) return
+
+      try {
+        const remote = await loadSharedState()
+        if (cancelled) return
+
+        if (isValidState(remote?.state)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(remote.state))
+          setState(remote.state)
+        } else {
+          await saveSharedState(stateRef.current, clientId.current)
+        }
+
+        remoteReady.current = true
+        setSync({ mode: 'online', label: 'Đồng bộ trực tuyến' })
+
+        stopRealtime = subscribeToSharedState({
+          onState(row) {
+            if (!row || row.updated_by === clientId.current || !isValidState(row.state)) return
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(row.state))
+            setState(row.state)
+            setSync({ mode: 'online', label: 'Đồng bộ trực tuyến' })
+          },
+          onStatus(status) {
+            if (status === 'SUBSCRIBED') setSync({ mode: 'online', label: 'Đồng bộ trực tuyến' })
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              setSync({ mode: 'error', label: 'Mất kết nối – đã lưu máy' })
+            }
+          },
+        })
+      } catch (error) {
+        console.error('Không thể kết nối Supabase:', error)
+        setSync({ mode: 'error', label: 'Mất kết nối – đã lưu máy' })
+      }
+    }
+
+    startRealtime()
+
     return () => {
+      cancelled = true
+      stopRealtime()
       channel.current?.close()
       window.removeEventListener('storage', onStorage)
     }
@@ -163,6 +239,17 @@ export function PilotProvider({ children }) {
       const stamped = { ...next, lastUpdated: new Date().toISOString() }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stamped))
       channel.current?.postMessage(stamped)
+
+      if (remoteReady.current) {
+        setSync({ mode: 'syncing', label: 'Đang đồng bộ' })
+        saveSharedState(stamped, clientId.current)
+          .then(() => setSync({ mode: 'online', label: 'Đồng bộ trực tuyến' }))
+          .catch((error) => {
+            console.error('Không thể lưu dữ liệu Supabase:', error)
+            setSync({ mode: 'error', label: 'Mất kết nối – đã lưu máy' })
+          })
+      }
+
       return stamped
     })
   }
@@ -253,7 +340,7 @@ export function PilotProvider({ children }) {
     },
   }), [])
 
-  return <PilotContext.Provider value={{ state, actions }}>{children}</PilotContext.Provider>
+  return <PilotContext.Provider value={{ state, actions, sync }}>{children}</PilotContext.Provider>
 }
 
 export function usePilot() {

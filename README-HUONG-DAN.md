@@ -117,11 +117,18 @@ npm run build
 
 Nếu thành công, thư mục `dist` sẽ được tạo. Đây là thư mục dùng để đưa demo lên mạng sau này.
 
-## 11. Supabase
+## 11. Supabase Realtime
 
-Chưa cần kết nối Supabase ngay. File `supabase-schema.sql` và `.env.example` đã được chuẩn bị cho bước tiếp theo.
+Phiên bản 1.2 hỗ trợ đồng bộ giữa nhiều thiết bị:
 
-Không đưa mật khẩu hoặc `service_role` key vào code trình duyệt.
+1. Mở Supabase SQL Editor và chạy toàn bộ file `supabase-schema.sql`.
+2. Tạo `.env.local` từ `.env.example`.
+3. Điền `VITE_SUPABASE_URL` và `VITE_SUPABASE_PUBLISHABLE_KEY`.
+4. Khởi động lại ứng dụng.
+
+Khi kết nối thành công, đầu trang hiển thị `Đồng bộ trực tuyến`. Nếu mất mạng, dữ liệu tiếp tục được lưu trên máy và đầu trang hiển thị `Mất kết nối – đã lưu máy`.
+
+Không đưa mật khẩu Database, Secret key hoặc `service_role` key vào code trình duyệt hay GitHub.
 
 ## 12. Cách nâng cấp dự án
 

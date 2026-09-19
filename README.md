@@ -49,6 +49,16 @@ npm run build
 
 ## Trạng thái hiện tại
 
-Phiên bản `1.1.0` là Proof of Concept. Ba giao diện đang đồng bộ theo thời gian thực giữa các tab trên cùng trình duyệt bằng Local Storage và Broadcast Channel. Cấu trúc Supabase đã được chuẩn bị để nâng cấp sang đồng bộ giữa nhiều thiết bị.
+Phiên bản `1.2.0` hỗ trợ hai chế độ:
 
-Không commit khóa API hoặc `service_role` key vào repository. Chỉ sử dụng `.env.example` làm mẫu cấu hình.
+- Có cấu hình Supabase: ba giao diện đồng bộ Realtime giữa điện thoại và máy tính.
+- Chưa có cấu hình hoặc mất mạng: ứng dụng tự lưu cục bộ bằng Local Storage và vẫn chạy được.
+
+### Kết nối Supabase
+
+1. Chạy toàn bộ file `supabase-schema.sql` trong SQL Editor của dự án Supabase.
+2. Sao chép `.env.example` thành `.env.local`.
+3. Điền Project URL và Publishable key vào `.env.local`.
+4. Chạy lại `npm run dev`.
+
+Không commit `.env.local`, Secret key hoặc `service_role` key vào repository. Publishable key chỉ được truy cập dữ liệu mà RLS cho phép.

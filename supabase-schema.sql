@@ -1,46 +1,69 @@
--- Chưa cần chạy file này ở Bước 1.
--- File chuẩn bị sẵn cho giai đoạn kết nối dữ liệu thật giữa nhiều thiết bị.
+-- PILOT Platform - Realtime Demo schema
+-- Chay toan bo tep nay mot lan trong Supabase SQL Editor.
+-- Script co the chay lai an toan, khong xoa du lieu dang co.
 
-create table if not exists public.trips (
+create table if not exists public.demo_sessions (
   id text primary key,
-  container_id text not null,
-  driver_name text not null,
-  truck_id text not null,
-  terminal_name text not null,
-  slot_start timestamptz,
-  slot_end timestamptz,
-  eta timestamptz,
-  status text not null default 'DRAFT',
-  risk_level text not null default 'ON_TIME',
-  updated_at timestamptz not null default now()
+  state jsonb not null default '{}'::jsonb,
+  updated_by text not null default 'system',
+  updated_at timestamptz not null default now(),
+  constraint demo_sessions_main_only check (id = 'main')
 );
 
-create table if not exists public.gps_events (
-  id bigint generated always as identity primary key,
-  trip_id text not null references public.trips(id),
-  latitude double precision not null,
-  longitude double precision not null,
-  speed_kmh double precision,
-  event_time timestamptz not null,
-  received_time timestamptz not null default now()
-);
+comment on table public.demo_sessions is
+  'Trang thai mo phong dung chung cho Driver, Dispatcher va Port Control Tower.';
 
-create table if not exists public.recommendations (
-  id bigint generated always as identity primary key,
-  trip_id text not null references public.trips(id),
-  reason text not null,
-  old_slot text,
-  proposed_slot text,
-  status text not null default 'PENDING',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
+-- Bat RLS de Data API khong the bo qua quy tac truy cap.
+alter table public.demo_sessions enable row level security;
 
-create table if not exists public.audit_logs (
-  id bigint generated always as identity primary key,
-  trip_id text,
-  actor_role text not null,
-  action text not null,
-  details jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
-);
+-- Ban demo khong chua du lieu that. Trinh duyet chi duoc doc va ghi session main.
+-- Ban san pham se thay policy nay bang Supabase Auth va phan quyen theo vai tro.
+drop policy if exists "pilot_demo_read_main" on public.demo_sessions;
+create policy "pilot_demo_read_main"
+on public.demo_sessions
+for select
+to anon, authenticated
+using (id = 'main');
+
+drop policy if exists "pilot_demo_insert_main" on public.demo_sessions;
+create policy "pilot_demo_insert_main"
+on public.demo_sessions
+for insert
+to anon, authenticated
+with check (id = 'main');
+
+drop policy if exists "pilot_demo_update_main" on public.demo_sessions;
+create policy "pilot_demo_update_main"
+on public.demo_sessions
+for update
+to anon, authenticated
+using (id = 'main')
+with check (id = 'main');
+
+-- Automatically expose new tables dang tat, nen chi cap quyen dung bang demo nay.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.demo_sessions to anon, authenticated;
+
+-- Dua bang vao publication Realtime mot lan duy nhat.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'demo_sessions'
+  ) then
+    alter publication supabase_realtime add table public.demo_sessions;
+  end if;
+end
+$$;
+
+-- Ket qua cuoi cung phai co table_name = demo_sessions va rls_enabled = true.
+select
+  c.relname as table_name,
+  c.relrowsecurity as rls_enabled
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+  and c.relname = 'demo_sessions';
